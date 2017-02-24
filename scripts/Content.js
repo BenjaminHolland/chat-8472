@@ -34,7 +34,9 @@ export class Content extends React.Component {
     }
     
     componentDidMount() {
-        
+        Socket.on('users refresh',(data)=>{
+            console.log(JSON.stringify(data,null,3));
+        });
         Socket.on('update numbers', (data) => {
             console.log(data);
             this.setState((prevState, props) => {

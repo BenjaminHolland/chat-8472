@@ -13101,6 +13101,9 @@ var Content = exports.Content = function (_React$Component) {
         value: function componentDidMount() {
             var _this2 = this;
 
+            _Socket.Socket.on('users refresh', function (data) {
+                console.log(JSON.stringify(data, null, 3));
+            });
             _Socket.Socket.on('update numbers', function (data) {
                 console.log(data);
                 _this2.setState(function (prevState, props) {

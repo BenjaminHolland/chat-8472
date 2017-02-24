@@ -1,4 +1,4 @@
-var clientIds = {
+var appIds = {
   'google': '189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com'
 }
 
@@ -6,111 +6,83 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app); //Create HTTP Server? (Yes)
 var sio = require('socket.io')(http); //Create SocketIO Interface with whatever http is. (It's an http server)
+
 var GoogleAuth = require('google-auth-library'); //import googles authentication library
 var gauth = new GoogleAuth; //"new" works strangely in js
-var gauthClient = new gauth.OAuth2(clientIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
-var entries = []; //Keeps track of current entries.
+var gauthClient = new gauth.OAuth2(appIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
 
-var userCurrent = {};
-var userData = {};
-
-function attachUser(socket){
-  console.log("Connection on "+socket['id']+".");
-  userCurrent[socket['id']]={'token':socket['id']};
-  userData[socket['id']]={'given_name':'Anon_'+socket['id']};
+function Users() {
+  this._current = new Map();
+  this._temp = new Map();
+  this._data = new Map();
 }
 
-function detachUser(socket){
-  console.log("Disconnection on "+socket['id']+".");
-  delete userCurrent[socket['id']];
+Users.prototype.attachUser = function(socket) {
+  console.log("Attatching new user on " + socket['id']);
+  this._current.set(socket['id'],{'type:':'temp','id':socket['id']});
+  this._temp.set(socket['id'],{'given_name':'Anon-'+socket['id']});
+  this.dispatchRefresh();
 }
 
-function confirmUser(socket,token,payload){
-  console.log("Confirming "+socket.id+" as "+token".");
-  userCurrent[socket['id']]['token']=token;
-  if(!userData[token]){
+
+Users.prototype.getUsers=function(){
+  var userList=[];
+  console.log(this._current);
+  this._current.forEach((item, index, array)=>{
+    console.log(this.item);
+    if(item.type='temp'){
+      userList.push(this._temp[item['id']]['given_name']);
+    }else{
+      userList.push(this._data[item['id']]['given_name']);
+    }
+  });
+  return userList;
+}
+
+Users.prototype.dispatchRefresh=function(){
+  sio.emit('users refresh',this.getUsers());
+}
+
+Users.prototype.detachUser = function(socket) {
+  console.log("Detaching user on " + socket['id']);
+  this._current.delete(socket['id']);
+  if(this._temp.has(socket['id'])){
+    this._temp.delete(socket['id']);
+  }
+  this.dispatchRefresh();
+}
+
+var users = new Users();
+
+function confirmUser(socket, token, payload) {
+  console.log("Confirming " + socket.id + " as " + token + ".");
+  userCurrent[socket['id']]['token'] = token;
+  if (!userData[token]) {
     console.log("Registering user.");
-    userData[token]=userData[socket['id']];
+    userData[token] = userData[socket['id']];
     delete userData[socket['id']];
-    userData[token]=payload;
-  }else{
+    userData[token] = payload;
+  }
+  else {
     console.log("User already registered.");
   }
 }
 
-var users = {
-  0: "Anon"
-};
-
-function formatEntries() {
-  return entries.map(item => {
-    return {
-      'id': users[item['id']],
-      'number': item['number']
-    }
-  });
-}
-
-function emitCurrentNumbers() {
-  var message = {
-    'numbers': formatEntries()
-  };
-  sio.emit('update numbers', message);
-}
-
-function registerNewNumberHandler(socket) {
-  socket.on('new number', msg => {
-    console.log("A new number appeared");
-    entries.push({
-      'id': msg['id'],
-      'number': msg['number']
-    });
-    emitCurrentNumbers();
-    console.log(JSON.stringify(entries, "", 4));
-  });
-}
-
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
-    detachUser(socket);
+    users.detachUser(socket);
   });
 }
-
-function registerAuthHandler(socket) {
-  socket.on('user auth', msg => {
-    gauthClient.verifyIdToken(
-      msg['id'], clientIds['google'],
-      (error, login) => {
-        if (!error) {
-          var payload = login.getPayload();
-          confirmUser(socket,msg['id'],payload);
-        }
-        else {
-          console.warn('Authentication Failed.');
-        }
-      });
-
-  })
-}
-
 
 function registerConnectionHandler() {
   sio.on('connection', socket => {
-    console.log('A user connected on socket ' + socket['id'] + '.');
-    userCurrent[socket['id']] = {
-      'name': 'Anon' + socket['id']
-    };
-    console.log(JSON.stringify(userCurrent, null, 3));
-
-    emitCurrentNumbers();
-    registerNewNumberHandler(socket);
-    registerAuthHandler(socket);
+    users.attachUser(socket);
     registerDisconnectHandler(socket);
-
   });
 }
 
 registerConnectionHandler()
+
 
 //Application setup stuff directly from hadoku (more or less.)
 //Only difference from the defaults here is that the http listener is being used instead of the app.
