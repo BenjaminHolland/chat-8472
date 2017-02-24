@@ -11,9 +11,27 @@ var gauth = new GoogleAuth; //"new" works strangely in js
 var gauthClient = new gauth.OAuth2(clientIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
 var entries = []; //Keeps track of current entries.
 
-var currentUsers = {};
+var userCurrent = {};
 var userData = {};
-//Associates user tokens with their data.
+
+function attachUser(socket){
+  userCurrent[socket['id']]={'token':socket['id']};
+  userData[socket['id']]={'given_name':'Anon_'+socket['id']};
+}
+
+function detachUser(socket){
+  delete userCurrent[socket['id']];
+}
+
+function confirmUser(socket,token,payload){
+  userCurrent[socket['id']]['token']=token;
+  if(!userData[token]){
+    userData[token]=userData[socket['id']];
+    delete userData[socket['id']];
+    userData[token]=payload;
+  }
+}
+
 var users = {
   0: "Anon"
 };
@@ -83,10 +101,10 @@ function registerNewUserHandler(socket) {
 
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
-    var user = currentUsers[socket['id']];
+    var user = userCurrent[socket['id']];
     console.log(user['name'] + " disconnected");
-    delete currentUsers[socket['id']];
-    console.log(JSON.stringify(currentUsers, null, 3));
+    delete userCurrent[socket['id']];
+    console.log(JSON.stringify(userCurrent, null, 3));
   });
 }
 
@@ -98,7 +116,7 @@ function registerAuthHandler(socket) {
         if (!error) {
           var payload = login.getPayload();
           userData[msg['id']] = payload;
-          currentUsers[socket['id']]['token'] = msg['id'];
+          userCurrent[socket['id']]['token'] = msg['id'];
         }
         else {
           console.warn('Authentication Failed.');
@@ -112,10 +130,10 @@ function registerAuthHandler(socket) {
 function registerConnectionHandler() {
   sio.on('connection', socket => {
     console.log('A user connected on socket ' + socket['id'] + '.');
-    currentUsers[socket['id']] = {
+    userCurrent[socket['id']] = {
       'name': 'Anon' + socket['id']
     };
-    console.log(JSON.stringify(currentUsers, null, 3));
+    console.log(JSON.stringify(userCurrent, null, 3));
 
     emitCurrentNumbers();
     registerAuthHandler(socket);
