@@ -11,7 +11,7 @@ var gauth = new GoogleAuth; //"new" works strangely in js
 var gauthClient = new gauth.OAuth2(clientIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
 var entries = []; //Keeps track of current entries.
 
-var currentUsers=[];
+var currentUsers={};
 
 //Associates user tokens with their data.
 var users={
@@ -80,18 +80,21 @@ function registerNewUserHandler(socket) {
   });
 }
 
-
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
-    console.log("A user disconnected");
+    var user=currentUsers[socket['id']];
+    console.log(user['name']+" disconnected");
+    delete currentUsers[socket['id']];
+    console.log(JSON.stringify(currentUsers,null,3));
   });
 }
 
 function registerConnectionHandler() {
   sio.on('connection', socket => {
     console.log('A user connected on socket '+socket['id']+'.');
-    currentUsers.push({'socket': socket['id'],'name': 'Anon'+socket['id']});
+    currentUsers[socket['id']]={'name':'Anon'+socket['id']};
     console.log(JSON.stringify(currentUsers,null,3));   
+    
     emitCurrentNumbers();
     registerNewNumberHandler(socket);
     registerNewUserHandler(socket);
