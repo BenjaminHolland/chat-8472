@@ -19,7 +19,7 @@ function Users() {
 
 Users.prototype.attachUser = function(socket) {
   console.log("Attatching new user on " + socket['id']);
-  this._current.set(socket['id'],{'type:':'temp','id':socket['id']});
+  this._current.set(socket['id'],{'type':'temp','id':socket['id']});
   this._temp.set(socket['id'],{'given_name':'Anon-'+socket['id']});
   this.dispatchRefresh();
 }
@@ -27,13 +27,12 @@ Users.prototype.attachUser = function(socket) {
 
 Users.prototype.getUsers=function(){
   var userList=[];
-  console.log(this._current);
+  //console.log(this._current);
   this._current.forEach((item, index, array)=>{
-    console.log(this.item);
-    if(item.type='temp'){
-      userList.push(this._temp[item['id']]['given_name']);
+    if(item.type=='temp'){
+      userList.push(this._temp.get(item.id)['given_name']);
     }else{
-      userList.push(this._data[item['id']]['given_name']);
+      userList.push(this._data.get(item.id)['given_name']);
     }
   });
   return userList;
