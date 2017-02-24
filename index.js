@@ -90,53 +90,22 @@ function registerDisconnectHandler(socket) {
   });
 }
 
-function getAuthPayload(socket,msg,callback,error) {
-  gauthClient.verifyIdToken(
-    msg['id'] == 0 ? 1 : msg['id'],
-    
-    clientIds['google'],
-    (e, login) => {
-      console.log(e);
-      if (!e) {
-        callback(socket,msg['id'],login.getPayload(),null);
-      }
-      else {
-        return callback(null,e);
-      }
-    });
-}
-
-function assocUser(socket,token,payload,error){
-  if(error){
-    console.log("Authentication Failed.");
-    console.log(error);
-  }else{
-    currentUsers[socket['id']]['token']=token;
-    userData[token]=payload;
-    console.log(userData);
-  }
-}
 function registerAuthHandler(socket) {
   socket.on('user auth', msg => {
-    console.log("Authenticating...");
-    console.log(JSON.stringify(msg,null,2));
-    //verify the token with google. This could be expanded to use any other
-    //auth things. Not entirely sure uwhat to do if it fails though.
-    var payload = getAuthPayload(socket,msg,assocUser);
-      console.log(JSON.stringify(payload, null, 2));
-    
-    if (!payload) {
-      
-      console.log("Authentication failed.");
-    }
-    else {
+    gauthClient.verifyIdToken(
+      msg['id'], clientIds['google'],
+      (error, login) => {
+        if (!error) {
+          var payload = login.getPayload();
+          userData[msg['id']] = payload;
+          currentUsers[socket['id']]['token'] = msg['id'];
+        }
+        else {
+          console.warn('Authentication Failed.');
+        }
+      });
 
-    //  console.log(JSON.stringify(payload, null, 2));
-      currentUsers[socket['id']]['name'] = payload['given_name'];
-
-      console.log("Authentication succeeded.")
-    }
-  });
+  })
 }
 
 
@@ -151,7 +120,7 @@ function registerConnectionHandler() {
     emitCurrentNumbers();
     registerAuthHandler(socket);
     registerNewNumberHandler(socket);
-   // registerNewUserHandler(socket);
+    // registerNewUserHandler(socket);
     registerDisconnectHandler(socket);
 
   });
