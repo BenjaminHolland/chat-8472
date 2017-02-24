@@ -13087,6 +13087,7 @@ var Content = exports.Content = function (_React$Component) {
         key: 'updateId',
         value: function updateId(id) {
             console.log("Update ID: " + id);
+            _Socket.Socket.emit('user auth', { 'id': id });
             _Socket.Socket.emit('new user', { 'id': id });
             this.setState(function (prevState, props) {
                 return {

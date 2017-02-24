@@ -1,5 +1,5 @@
-var clientIds={
-  'google':'189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com'
+var clientIds = {
+  'google': '189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com'
 }
 
 var express = require('express');
@@ -11,11 +11,11 @@ var gauth = new GoogleAuth; //"new" works strangely in js
 var gauthClient = new gauth.OAuth2(clientIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
 var entries = []; //Keeps track of current entries.
 
-var currentUsers={};
-
+var currentUsers = {};
+var userData = {};
 //Associates user tokens with their data.
-var users={
-  0:"Anon"
+var users = {
+  0: "Anon"
 };
 
 function formatEntries() {
@@ -54,7 +54,8 @@ function registerNewUserHandler(socket) {
 
     if (rawMsg.length < 10) {
       m = msg['id'];
-    } else {
+    }
+    else {
       console.log(typeof msg['id']);
       m = rawMsg.substr(0, 5) + "..." + rawMsg.substr(rawMsg.length - 5, 5);
     }
@@ -82,22 +83,75 @@ function registerNewUserHandler(socket) {
 
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
-    var user=currentUsers[socket['id']];
-    console.log(user['name']+" disconnected");
+    var user = currentUsers[socket['id']];
+    console.log(user['name'] + " disconnected");
     delete currentUsers[socket['id']];
-    console.log(JSON.stringify(currentUsers,null,3));
+    console.log(JSON.stringify(currentUsers, null, 3));
   });
 }
 
+function getAuthPayload(socket,msg,callback,error) {
+  gauthClient.verifyIdToken(
+    msg['id'] == 0 ? 1 : msg['id'],
+    
+    clientIds['google'],
+    (e, login) => {
+      console.log(e);
+      if (!e) {
+        callback(socket,msg['id'],login.getPayload(),null);
+      }
+      else {
+        return callback(null,e);
+      }
+    });
+}
+
+function assocUser(socket,token,payload,error){
+  if(error){
+    console.log("Authentication Failed.");
+    console.log(error);
+  }else{
+    currentUsers[socket['id']]['token']=token;
+    userData[token]=payload;
+    console.log(userData);
+  }
+}
+function registerAuthHandler(socket) {
+  socket.on('user auth', msg => {
+    console.log("Authenticating...");
+    console.log(JSON.stringify(msg,null,2));
+    //verify the token with google. This could be expanded to use any other
+    //auth things. Not entirely sure uwhat to do if it fails though.
+    var payload = getAuthPayload(socket,msg,assocUser);
+      console.log(JSON.stringify(payload, null, 2));
+    
+    if (!payload) {
+      
+      console.log("Authentication failed.");
+    }
+    else {
+
+    //  console.log(JSON.stringify(payload, null, 2));
+      currentUsers[socket['id']]['name'] = payload['given_name'];
+
+      console.log("Authentication succeeded.")
+    }
+  });
+}
+
+
 function registerConnectionHandler() {
   sio.on('connection', socket => {
-    console.log('A user connected on socket '+socket['id']+'.');
-    currentUsers[socket['id']]={'name':'Anon'+socket['id']};
-    console.log(JSON.stringify(currentUsers,null,3));   
-    
+    console.log('A user connected on socket ' + socket['id'] + '.');
+    currentUsers[socket['id']] = {
+      'name': 'Anon' + socket['id']
+    };
+    console.log(JSON.stringify(currentUsers, null, 3));
+
     emitCurrentNumbers();
+    registerAuthHandler(socket);
     registerNewNumberHandler(socket);
-    registerNewUserHandler(socket);
+   // registerNewUserHandler(socket);
     registerDisconnectHandler(socket);
 
   });
