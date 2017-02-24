@@ -15,20 +15,26 @@ var userCurrent = {};
 var userData = {};
 
 function attachUser(socket){
+  console.log("Connection on "+socket['id']+".");
   userCurrent[socket['id']]={'token':socket['id']};
   userData[socket['id']]={'given_name':'Anon_'+socket['id']};
 }
 
 function detachUser(socket){
+  console.log("Disconnection on "+socket['id']+".");
   delete userCurrent[socket['id']];
 }
 
 function confirmUser(socket,token,payload){
+  console.log("Confirming "+socket.id+" as "+token".");
   userCurrent[socket['id']]['token']=token;
   if(!userData[token]){
+    console.log("Registering user.");
     userData[token]=userData[socket['id']];
     delete userData[socket['id']];
     userData[token]=payload;
+  }else{
+    console.log("User already registered.");
   }
 }
 
@@ -64,47 +70,9 @@ function registerNewNumberHandler(socket) {
   });
 }
 
-function registerNewUserHandler(socket) {
-  socket.on('new user', msg => {
-    //log a digest of the new user.
-    var m = "";
-    var rawMsg = msg['id'] == 0 ? "0" : msg['id'];
-
-    if (rawMsg.length < 10) {
-      m = msg['id'];
-    }
-    else {
-      console.log(typeof msg['id']);
-      m = rawMsg.substr(0, 5) + "..." + rawMsg.substr(rawMsg.length - 5, 5);
-    }
-
-    console.log("New User: " + m);
-
-    //verify the token with google. This could be expanded to use any other
-    //auth things. Not entirely sure what to do if it fails though.
-    gauthClient.verifyIdToken(
-      msg['id'] == 0 ? 1 : msg['id'],
-      clientIds['google'],
-      (e, login) => {
-        if (!e) {
-          var payload = login.getPayload();
-          console.log(payload);
-          users[msg['id']] = payload['given_name'];
-        }
-        else {
-          //Apparently this is an empty object. Not sure why.
-          console.log(JSON.stringify(e, null, 4));
-        }
-      });
-  });
-}
-
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
-    var user = userCurrent[socket['id']];
-    console.log(user['name'] + " disconnected");
-    delete userCurrent[socket['id']];
-    console.log(JSON.stringify(userCurrent, null, 3));
+    detachUser(socket);
   });
 }
 
@@ -115,8 +83,7 @@ function registerAuthHandler(socket) {
       (error, login) => {
         if (!error) {
           var payload = login.getPayload();
-          userData[msg['id']] = payload;
-          userCurrent[socket['id']]['token'] = msg['id'];
+          confirmUser(socket,msg['id'],payload);
         }
         else {
           console.warn('Authentication Failed.');
@@ -136,16 +103,14 @@ function registerConnectionHandler() {
     console.log(JSON.stringify(userCurrent, null, 3));
 
     emitCurrentNumbers();
-    registerAuthHandler(socket);
     registerNewNumberHandler(socket);
-    // registerNewUserHandler(socket);
+    registerAuthHandler(socket);
     registerDisconnectHandler(socket);
 
   });
 }
 
 registerConnectionHandler()
-
 
 //Application setup stuff directly from hadoku (more or less.)
 //Only difference from the defaults here is that the http listener is being used instead of the app.
