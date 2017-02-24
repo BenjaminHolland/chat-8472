@@ -1,16 +1,21 @@
-var clientId = '189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com';
+var clientIds={
+  'google':'189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com'
+}
+
 var express = require('express');
 var app = express();
 var http = require('http').Server(app); //Create HTTP Server? (Yes)
 var sio = require('socket.io')(http); //Create SocketIO Interface with whatever http is. (It's an http server)
 var GoogleAuth = require('google-auth-library'); //import googles authentication library
 var gauth = new GoogleAuth; //"new" works strangely in js
-var gauthClient = new gauth.OAuth2(clientId, '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
+var gauthClient = new gauth.OAuth2(clientIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
 var entries = []; //Keeps track of current entries.
 
+var currentUsers=[];
+
 //Associates user tokens with their data.
-var users = {  
-  0: "Anon"
+var users={
+  0:"Anon"
 };
 
 function formatEntries() {
@@ -49,8 +54,7 @@ function registerNewUserHandler(socket) {
 
     if (rawMsg.length < 10) {
       m = msg['id'];
-    }
-    else {
+    } else {
       console.log(typeof msg['id']);
       m = rawMsg.substr(0, 5) + "..." + rawMsg.substr(rawMsg.length - 5, 5);
     }
@@ -61,7 +65,7 @@ function registerNewUserHandler(socket) {
     //auth things. Not entirely sure what to do if it fails though.
     gauthClient.verifyIdToken(
       msg['id'] == 0 ? 1 : msg['id'],
-      clientId,
+      clientIds['google'],
       (e, login) => {
         if (!e) {
           var payload = login.getPayload();
@@ -76,6 +80,7 @@ function registerNewUserHandler(socket) {
   });
 }
 
+
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
     console.log("A user disconnected");
@@ -84,9 +89,9 @@ function registerDisconnectHandler(socket) {
 
 function registerConnectionHandler() {
   sio.on('connection', socket => {
-
-    console.log('A user connected.');
-
+    console.log('A user connected on socket '+socket['id']+'.');
+    currentUsers.push({'socket': socket['id'],'name': 'Anon'+socket['id']});
+    console.log(JSON.stringify(currentUsers,null,3));   
     emitCurrentNumbers();
     registerNewNumberHandler(socket);
     registerNewUserHandler(socket);
