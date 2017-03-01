@@ -13310,8 +13310,17 @@ var MessageList = exports.MessageList = function (_React$Component) {
 			});
 			return React.createElement(
 				'div',
-				{ className: 'messages' },
-				messages
+				{ className: 'messageContainer' },
+				React.createElement(
+					'div',
+					{ className: 'messageContainerHeader' },
+					'Messages'
+				),
+				React.createElement(
+					'div',
+					{ className: 'messages' },
+					messages
+				)
 			);
 		}
 	}]);

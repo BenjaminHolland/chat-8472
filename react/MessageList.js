@@ -24,7 +24,9 @@ export class MessageList extends React.Component{
             <div className="message" key={index}>{n}</div>
         );
 	return (
-	 <div className='messages'>{messages}</div>);		
+	<div className='messageContainer'>
+	<div className='messageContainerHeader'>Messages</div>
+	 <div className='messages'>{messages}</div></div>);		
 	}
 
 }
