@@ -13303,14 +13303,14 @@ var MessageList = exports.MessageList = function (_React$Component) {
 		value: function render() {
 			var messages = this.state.messages.map(function (n, index) {
 				return React.createElement(
-					'li',
+					'div',
 					{ className: 'message', key: index },
 					n
 				);
 			});
 			return React.createElement(
-				'ul',
-				null,
+				'div',
+				{ className: 'messages' },
 				messages
 			);
 		}

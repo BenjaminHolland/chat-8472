@@ -21,10 +21,10 @@ export class MessageList extends React.Component{
 	render(){
 		let messages = this.state.messages.map(
             (n, index) =>
-            <li className="message" key={index}>{n}</li>
+            <div className="message" key={index}>{n}</div>
         );
 	return (
-	 <ul>{messages}</ul>);		
+	 <div className='messages'>{messages}</div>);		
 	}
 
 }
