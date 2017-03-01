@@ -8,6 +8,13 @@ function addUser(name){
 	users.users.push(name);
 	sio.emit('users.list',users);
 }
+function removeUser(name){
+	var index=users.users.indexOf(name);
+	if(index>-1){
+	users.users.splice(users.users.indexOf(name),1);
+	}
+	sio.emit('users.list',users);
+}
 
 
 app.set('port',(process.env.PORT||5000));
@@ -23,7 +30,10 @@ sio.on('connection', (socket)=>{
 		console.log('User on socket '+socket['id']+'logged in.');
 		console.log(JSON.stringify(data,null,2));
 	});
-
+	socket.on('disconnect',(data)=>{
+		console.log('User disconnected.');
+		removeUser(socket.id);
+	});
 	socket.emit('users.list',{'users':['a','b','c']});
 	addUser(socket.id);
 	socket.emit('messages.list',{'messages':['message 1','message 2','message 3']});
