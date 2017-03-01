@@ -13391,7 +13391,7 @@ var UserList = exports.UserList = function (_React$Component) {
 		value: function render() {
 			var users = this.state.users.map(function (n, index) {
 				return React.createElement(
-					'li',
+					'div',
 					{ className: 'user', key: index },
 					React.createElement(
 						'div',
@@ -13402,10 +13402,15 @@ var UserList = exports.UserList = function (_React$Component) {
 			});
 			return React.createElement(
 				'div',
-				null,
+				{ classname: 'usersContainer' },
 				React.createElement(
-					'ul',
-					null,
+					'div',
+					{ className: 'usersHeader' },
+					'Users'
+				),
+				React.createElement(
+					'div',
+					{ className: 'users' },
 					users
 				)
 			);
