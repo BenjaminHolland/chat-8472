@@ -3,6 +3,13 @@ var app=express();
 var http=require('http').Server(app);
 var sio=require('socket.io')(http);
 
+var users={'users':[]};
+function addUser(name){
+	users.users.push(name);
+	sio.emit('users.list',users);
+}
+
+
 app.set('port',(process.env.PORT||5000));
 app.use(express.static(__dirname+'/public'));
 app.set('views',__dirname+'/views');
@@ -16,7 +23,9 @@ sio.on('connection', (socket)=>{
 		console.log('User on socket '+socket['id']+'logged in.');
 		console.log(JSON.stringify(data,null,2));
 	});
+
 	socket.emit('users.list',{'users':['a','b','c']});
+	addUser(socket.id);
 	socket.emit('messages.list',{'messages':['message 1','message 2','message 3']});
 	console.log("What a wonderful connection.");
 });	
