@@ -1,7 +1,7 @@
 {
-  "name": "server_test",
+  "name": "chat-8472",
   "version": "1.0.0",
-  "description": "Server Test",
+  "description": "Chat app for CST 438 Spring 2017",
   "main": "index.js",
   "engines": {
     "node": "5.9.1"
@@ -24,8 +24,8 @@
     "debug": "DEBUG=* npm start"
   },
   "keywords": [
-    "Server",
-    "Test"
+    'Chat',
+    'School'
   ],
   "author": "Ben",
   "license": "ISC"
