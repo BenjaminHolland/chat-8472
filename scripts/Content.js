@@ -21,10 +21,10 @@ export class Content extends React.Component {
         };
     }
     
-    updateId(id){
+    updateId(user){
+        var id=user.getAuthResponse(true).id_token;
         console.log("Update ID: "+id);
         Socket.emit('user auth',{'id':id});
-        Socket.emit('new user',{'id':id});
         this.setState((prevState,props)=>{
         return {
             'id': id,

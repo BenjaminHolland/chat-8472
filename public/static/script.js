@@ -13085,10 +13085,10 @@ var Content = exports.Content = function (_React$Component) {
 
     _createClass(Content, [{
         key: 'updateId',
-        value: function updateId(id) {
+        value: function updateId(user) {
+            var id = user.getAuthResponse(true).id_token;
             console.log("Update ID: " + id);
             _Socket.Socket.emit('user auth', { 'id': id });
-            _Socket.Socket.emit('new user', { 'id': id });
             this.setState(function (prevState, props) {
                 return {
                     'id': id,

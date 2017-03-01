@@ -1,15 +1,15 @@
-var appIds = {
-  'google': '189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com'
-}
+//var appIds = {
+//  'google': '189610091735-mjde37ejomd603ihr2fiao8s40f4578e.apps.googleusercontent.com'
+//}
 
 var express = require('express');
 var app = express();
 var http = require('http').Server(app); //Create HTTP Server? (Yes)
 var sio = require('socket.io')(http); //Create SocketIO Interface with whatever http is. (It's an http server)
 
-var GoogleAuth = require('google-auth-library'); //import googles authentication library
-var gauth = new GoogleAuth; //"new" works strangely in js
-var gauthClient = new gauth.OAuth2(appIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
+//var GoogleAuth = require('google-auth-library'); //import googles authentication library
+//var gauth = new GoogleAuth; //"new" works strangely in js
+//var gauthClient = new gauth.OAuth2(appIds['google'], '', ''); //create a new OAuth2 client. Not sure what the other arguments are for yet. 
 
 function Users() {
   this._current = new Map();
@@ -24,7 +24,12 @@ Users.prototype.attachUser = function(socket) {
   this.dispatchRefresh();
 }
 
-
+Users.prototype.confirmUser=function(socket,token){
+  this._current.get(socket.id).type='persist';
+  this._current.get(socket.id).id=token;
+  this._temp.delete(socket.id);
+  this._data.set(token,"User-"+socket.id);
+}
 Users.prototype.getUsers=function(){
   var userList=[];
   //console.log(this._current);
@@ -53,19 +58,6 @@ Users.prototype.detachUser = function(socket) {
 
 var users = new Users();
 
-function confirmUser(socket, token, payload) {
-  console.log("Confirming " + socket.id + " as " + token + ".");
-  userCurrent[socket['id']]['token'] = token;
-  if (!userData[token]) {
-    console.log("Registering user.");
-    userData[token] = userData[socket['id']];
-    delete userData[socket['id']];
-    userData[token] = payload;
-  }
-  else {
-    console.log("User already registered.");
-  }
-}
 
 function registerDisconnectHandler(socket) {
   socket.on('disconnect', targetSocket => {
