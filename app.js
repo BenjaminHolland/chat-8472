@@ -16,8 +16,10 @@ sio.on('connection', (socket)=>{
 		console.log('User on socket '+socket['id']+'logged in.');
 		console.log(JSON.stringify(data,null,2));
 	});
+	socket.emit('users.list',{'users':['a','b','c']});
+	socket.emit('messages.list',{'messages':['message 1','message 2','message 3']});
 	console.log("What a wonderful connection.");
-});
+});	
 http.listen(app.get('port'),function(){
 	console.log("Test listening at port "+app.get('port'));
 });
