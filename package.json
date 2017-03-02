@@ -22,7 +22,9 @@
   },
   "scripts": {
     "start": "node app.js",
-    "debug": "DEBUG=* npm start"
+    "debug": "DEBUG=* npm start",
+    "test": "npm run test-unit",
+    "test-unit": "NODE_ENV=test mocha '/**/*.spec.js'"
   },
   "keywords": [
     "Chat",
@@ -35,6 +37,7 @@
     "babel-loader": "^6.3.2",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
-    "sinon": "^1.17.7"
+    "sinon": "^1.17.7",
+    "sinon-chai": "^2.8.0"
   }
 }
