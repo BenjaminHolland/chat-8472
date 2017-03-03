@@ -2,7 +2,7 @@ const expect = require('chai').expect;
 const should=require('should');
 var io = require('socket.io-client');
 
-var socketURL = 'http://0.0.0.0:8080';
+var socketURL = 'http://localhost:8080';
 
 var options = {
     transports: ['websocket'],
