@@ -1,3 +1,4 @@
+'use strict';
 //setup the app. It'd be nice to be do this in a class.
 var express=require('express');
 var app=express();
@@ -13,6 +14,27 @@ app.get('/',function (req,res){
 
 //Setup short-term server-side user tracking list and methods for working with it.
 //This should probably be a class, but I'm not entirely sure how to do tihs.
+class Users{
+	constructor(){
+		this._users={
+			'users':[]
+		};
+	}
+	addUser(name){
+		this._users.users.push(name);
+		console.log(this._users);
+		sio.emit('users.list',this._users);	
+	}
+	removeUser(name){
+		var index=this._users.users.indexOf(name);
+		if(index>-1){
+			this._users.users.splice(this._users.users.indexOf(name),1);
+		}
+		sio.emit('users.list',this._users);	
+	}
+}
+var userList=new Users();
+/*
 var users={'users':[]};
 function addUser(name){
 	users.users.push(name);
@@ -26,7 +48,7 @@ function removeUser(name){
 	}
 	sio.emit('users.list',users);
 }
-
+*/
 //Set up callbacks for socket.io and submit fake messages and users.
 //Not sure if this should go in the app class or be done independently. 
 sio.on('connection', (socket)=>{
@@ -36,9 +58,9 @@ sio.on('connection', (socket)=>{
 	});
 	socket.on('disconnect',(data)=>{
 		console.log('User disconnected.');
-		removeUser(socket.id);
+		userList.removeUser(socket.id);
 	});
-	addUser(socket.id);
+	userList.addUser(socket.id);
 	socket.emit('messages.list',{'messages':['message 1','message 2','message 3']});
 	console.log("What a wonderful connection.");
 });
