@@ -47,7 +47,7 @@ describe('Chat Server', () => {
         });
         c1.connect();
     }));
-/*
+
     it("Broadcasts the user list when someone connects.", (function(done) {
         var c1 = io.connect(socketURL, options);
         var c2;
@@ -74,5 +74,5 @@ describe('Chat Server', () => {
             }
         });
         c1.connect();
-    }))*/
+    }))
 });
