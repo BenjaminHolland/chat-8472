@@ -19,14 +19,25 @@ var chatUser3 = {
     'name': 'Dana'
 };
 describe('Chat Server', () => {
-
-    it("Broadcast The User List", (function*(done) {
-        var client1 = io.connect(socketURL, options);
-        client1.on('connect', (socket) => {
-            socket.on('users.list', (data) => {
-                console.log("Hello");
-                done();  
-            });
-        })
+    it("Broadcast the user list when someone connects.", (function(done) {
+        var c1 = io.connect(socketURL, options);
+        var c2;
+        c1.on("connect",(data)=>{
+            c2=io.connect(socketURL,options);
+            c2.on()
+            
+        });
+        c1.on("users.list",(data)=>{
+            if(data.users.length==2){
+                
+                data.users[0].should.equal(c1.id);
+                console.log(data.users[0]+"=="+c1.id);
+                data.users[1].should.equal(c2.id);
+                console.log(data.users[1]+"=="+c2.id);
+                c1.disconnect();
+                c2.disconnect();
+                done();
+            }
+        });
     }))
 });

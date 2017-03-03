@@ -38,7 +38,6 @@ sio.on('connection', (socket)=>{
 		console.log('User disconnected.');
 		removeUser(socket.id);
 	});
-	socket.emit('users.list',{'users':['a','b','c']});
 	addUser(socket.id);
 	socket.emit('messages.list',{'messages':['message 1','message 2','message 3']});
 	console.log("What a wonderful connection.");
