@@ -33,8 +33,12 @@ class Users {
 
 	removeUser(name) {
 		var index = this._users.users.indexOf(name);
+		console.log("Removing "+name);
 		if (index > -1) {
+			console.log("Removed"+name);
 			this._users.users.splice(this._users.users.indexOf(name), 1);
+		}else{
+			console.log("Failed to remove "+name);
 		}
 		this._sio.emit('users.list', this._users);
 	}
@@ -73,19 +77,24 @@ class App {
 	initCallbacks() {
 		var self=this;
 		this.sio.on('connection', (socket) => {
+			
 			socket.on('user.login.google', (data) => {
 				console.log('User on socket ' + socket['id'] + 'logged in.');
 				console.log(JSON.stringify(data, null, 2));
 			});
+			
 			socket.on('disconnect', (data) => {
 				console.log('User disconnected.');
 				console.log(self);
 				self.users.removeUser(socket.id);
 			});
+			
 			self.users.addUser(socket.id);
+			
 			socket.emit('messages.list', {
 				'messages': ['message 1', 'message 2', 'message 3']
 			});
+			
 			console.log("What a wonderful connection.");
 		});
 	}
