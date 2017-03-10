@@ -92,10 +92,11 @@ class App {
 	initCallbacks() {
 		var self = this;
 		this.sio.on('connection', (socket) => {
-
-			socket.on('user.login.google', (data) => {
+		
+			socket.on('users.login.google', (data) => {
 				console.log('User on socket ' + socket['id'] + 'logged in.');
-				console.log(JSON.stringify(data, null, 2));
+				this.users.updateUser(socket['id'], data['googleId']);
+			
 			});
 
 			socket.on('disconnect', (data) => {

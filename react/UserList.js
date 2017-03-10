@@ -6,6 +6,7 @@ export class UserList extends React.Component{
 		this.state={
 			'users':[]	
 		};
+		
 	}
 
 	componentDidMount(){
@@ -14,7 +15,7 @@ export class UserList extends React.Component{
 			console.log('returned new user list!');
 			this.setState((prevState,props)=>{
 				return {
-					'users': data;
+					'users': data
 				};
 			});
 		});

@@ -4,7 +4,7 @@ import { Content } from './Content';
 import GoogleLogin from 'react-google-login';
 import {Socket} from './Socket';
 const responseGoogle=(response)=>{
-	Socket.emit('user.login.google',response);
+	Socket.emit('users.login.google',response);
 }
 
 ReactDOM.render(<GoogleLogin
