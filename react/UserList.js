@@ -4,8 +4,7 @@ export class UserList extends React.Component{
 	constructor(props){
 		super(props);
 		this.state={
-			'users':[]
-		
+			'users':[]	
 		};
 	}
 
@@ -15,7 +14,7 @@ export class UserList extends React.Component{
 			console.log('returned new user list!');
 			this.setState((prevState,props)=>{
 				return {
-					'users':data['users']
+					'users': data;
 				};
 			});
 		});
