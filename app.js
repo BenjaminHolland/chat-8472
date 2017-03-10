@@ -25,9 +25,7 @@ class Users {
 
 	constructor(sio) {
 		this._sio = sio;
-		this._users = {
-			'users': []
-		};
+		this._users = [];
 	}
 
 	broadcastUpdate() {
@@ -35,12 +33,15 @@ class Users {
 	}
 
 	addUser(name) {
-		this._users.users.push(name);
-		console.log(this._users);
+		this._users.push(name);
 		this.broadcastUpdate();
 	}
 
 	updateUser(currentName, newName) {
+		var idx = this._users.indexOf(currentName);
+		if (idx >= 0) {
+			this._users[idx] = newName;
+		}
 		this.broadcastUpdate();
 	}
 
@@ -49,14 +50,12 @@ class Users {
 		console.log("Removing " + name);
 		if (index > -1) {
 			console.log("Removed" + name);
-			this._users.users.splice(this._users.users.indexOf(name), 1);
+			this._users.splice(index, 1);
 		} else {
 			console.log("Failed to remove " + name);
 		}
 		this.broadcastUpdate();
 	}
-
-
 }
 
 /*
