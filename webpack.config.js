@@ -1,3 +1,4 @@
+'use strict';
 module.exports = {
   entry: './react/Main.js',
   output: {
@@ -5,6 +6,7 @@ module.exports = {
     filename:'./public/static/webpack.bundle.js',
   
   },
+  devServer: { contentBase: ".", host: "localhost", port: 9000 },
   module: {
     loaders: [
       {
