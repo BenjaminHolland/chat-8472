@@ -23,6 +23,6 @@ export class UserList extends React.Component{
 
 	render(){
 		let users=this.state.users.map((n,index)=><div className="user" key={index}><div>{n}</div></div>);
-		return(<div classname='usersContainer'><div className='usersHeader'>Users</div><div className='users'>{users}</div></div>);
+		return(<div className='usersContainer'><div className='usersHeader'>Users</div><div className='users'>{users}</div></div>);
 	}
 }

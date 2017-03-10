@@ -1,28 +1,14 @@
 'use strict';
-/*//setup the app. It'd be nice to be do this in a class.
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var sio = require('socket.io')(http);
-app.set('port', (process.env.PORT || 5000));
-app.use(express.static(__dirname + '/public'));
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-app.get('/', function(req, res) {
-	res.render('index');
-});
-*/
-//Setup short-term server-side user tracking list and methods for working with it.
+
 class Messages {
 	constructor(sio) {
 		this._sio;
 		this._messages = [];
-
 	}
 }
 
+//Setup short-term server-side user tracking list and methods for working with it.
 class Users {
-
 	constructor(sio) {
 		this._sio = sio;
 		this._users = [];
@@ -46,7 +32,7 @@ class Users {
 	}
 
 	removeUser(name) {
-		var index = this._users.users.indexOf(name);
+		var index = this._users.indexOf(name);
 		console.log("Removing " + name);
 		if (index > -1) {
 			console.log("Removed" + name);
@@ -92,11 +78,11 @@ class App {
 	initCallbacks() {
 		var self = this;
 		this.sio.on('connection', (socket) => {
-		
+
 			socket.on('users.login.google', (data) => {
 				console.log('User on socket ' + socket['id'] + 'logged in.');
 				this.users.updateUser(socket['id'], data['googleId']);
-			
+				socket.emit("users.login.confirm", { 'isLoggedIn': true });	
 			});
 
 			socket.on('disconnect', (data) => {
