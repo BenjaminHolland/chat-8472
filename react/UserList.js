@@ -11,7 +11,7 @@ export class UserList extends React.Component{
 
 	componentDidMount(){
 		console.log("Mounted UserList");
-		Socket.on("users.list",(data)=>{
+		Socket.on("users.update",(data)=>{
 			console.log('returned new user list!');
 			this.setState((prevState,props)=>{
 				return {

@@ -13,36 +13,52 @@ app.get('/', function(req, res) {
 });
 */
 //Setup short-term server-side user tracking list and methods for working with it.
-class Users {
+class Messages {
 	constructor(sio) {
-		this._sio=sio;
+		this._sio;
+		this._messages = [];
+
+	}
+}
+
+class Users {
+
+	constructor(sio) {
+		this._sio = sio;
 		this._users = {
 			'users': []
 		};
 	}
 
+	broadcastUpdate() {
+		this._sio.emit("users.update", this._users);
+	}
+
 	addUser(name) {
 		this._users.users.push(name);
 		console.log(this._users);
-		this._sio.emit('users.list', this._users);
+		this.broadcastUpdate();
 	}
 
 	updateUser(currentName, newName) {
-		this._sio.emit('user.list', this._users);
+		this.broadcastUpdate();
 	}
 
 	removeUser(name) {
 		var index = this._users.users.indexOf(name);
-		console.log("Removing "+name);
+		console.log("Removing " + name);
 		if (index > -1) {
-			console.log("Removed"+name);
+			console.log("Removed" + name);
 			this._users.users.splice(this._users.users.indexOf(name), 1);
-		}else{
-			console.log("Failed to remove "+name);
+		} else {
+			console.log("Failed to remove " + name);
 		}
-		this._sio.emit('users.list', this._users);
+		this.broadcastUpdate();
 	}
+
+
 }
+
 /*
 var userList = new Users();
 */
@@ -59,49 +75,49 @@ class App {
 	start() {
 		console.log("starting app");
 		console.log(this.app);
-		this.app.set('port', (process.env.PORT || 5000));
+		this.app.set('port', (5000));
 		this.app.use(this.express.static(__dirname + '/public'));
 		this.app.set('views', __dirname + '/views');
 		this.app.set('view engine', 'ejs');
-		this.app.get('/', function(req, res) {
+		this.app.get('/', function (req, res) {
 			res.render('index');
 		});
 		this.initCallbacks();
 		//start the app server.	
-		var lPort=this.app.get('port');
-		this.http.listen(this.app.get('port'), function() {
+		var lPort = this.app.get('port');
+		this.http.listen(this.app.get('port'), function () {
 			console.log("Test listening at port " + lPort);
 		});
 	}
 
 	initCallbacks() {
-		var self=this;
+		var self = this;
 		this.sio.on('connection', (socket) => {
-			
+
 			socket.on('user.login.google', (data) => {
 				console.log('User on socket ' + socket['id'] + 'logged in.');
 				console.log(JSON.stringify(data, null, 2));
 			});
-			
+
 			socket.on('disconnect', (data) => {
 				console.log('User disconnected.');
 				console.log(self);
 				self.users.removeUser(socket.id);
 			});
-			
+
 			self.users.addUser(socket.id);
-			
+
 			socket.emit('messages.list', {
 				'messages': ['message 1', 'message 2', 'message 3']
 			});
-			
+
 			console.log("What a wonderful connection.");
 		});
 	}
 
 }
 
-var server=new App();
+var server = new App();
 server.start();
 
 /*
